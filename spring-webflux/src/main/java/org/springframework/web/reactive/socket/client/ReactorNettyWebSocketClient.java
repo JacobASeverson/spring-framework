@@ -46,6 +46,8 @@ public class ReactorNettyWebSocketClient implements WebSocketClient {
 
 	private int maxFramePayloadLength = NettyWebSocketSessionSupport.DEFAULT_FRAME_MAX_SIZE;
 
+	private boolean proxyPing = false;
+
 	private final HttpClient httpClient;
 
 
@@ -95,6 +97,13 @@ public class ReactorNettyWebSocketClient implements WebSocketClient {
 		return this.maxFramePayloadLength;
 	}
 
+	public boolean getProxyPing() {
+		return this.proxyPing;
+	}
+
+	public void setProxyPing(boolean proxyPing) {
+		this.proxyPing = proxyPing;
+	}
 
 	@Override
 	public Mono<Void> execute(URI url, WebSocketHandler handler) {
@@ -106,7 +115,7 @@ public class ReactorNettyWebSocketClient implements WebSocketClient {
 		String protocols = StringUtils.collectionToCommaDelimitedString(handler.getSubProtocols());
 		return getHttpClient()
 				.headers(nettyHeaders -> setNettyHeaders(requestHeaders, nettyHeaders))
-				.websocket(protocols, getMaxFramePayloadLength())
+				.websocket(protocols, getMaxFramePayloadLength(), this.proxyPing)
 				.uri(url.toString())
 				.handle((inbound, outbound) -> {
 					HttpHeaders responseHeaders = toHttpHeaders(inbound);
